@@ -7,7 +7,7 @@ st.write("อัปโหลดรูปภาพและกรอกราย�
 # ส่วนที่ 1: ฟอร์มกรอกข้อมูลและอัปโหลดรูปภาพ
 with st.form("activity_form"):
     activity_name = st.text_input("ชื่อกิจกรรม")
-    project_owner = st.text_input("ชื่อผู้รับผิดชอบโครงการ (สำหรับติดต่อขอลายเซ็น)")
+    project_owner = st.text_input("ชื่อผู้รับผิดชอบโครงการ")
     activity_date = st.date_input("วันที่จัดกิจกรรม")
     activity_hours = st.number_input("จำนวนชั่วโมงที่ได้รับ", min_value=1, step=1)
     uploaded_file = st.file_uploader("อัปโหลดรูปภาพหลักฐาน", type=["jpg", "png", "jpeg"])
