@@ -7,6 +7,7 @@ st.write("อัปโหลดรูปภาพและกรอกราย�
 # ส่วนที่ 1: ฟอร์มกรอกข้อมูลและอัปโหลดรูปภาพ
 with st.form("activity_form"):
     activity_name = st.text_input("ชื่อกิจกรรม")
+    project_owner = st.text_input("ชื่อผู้รับผิดชอบโครงการ (สำหรับติดต่อขอลายเซ็น)")
     activity_date = st.date_input("วันที่จัดกิจกรรม")
     activity_hours = st.number_input("จำนวนชั่วโมงที่ได้รับ", min_value=1, step=1)
     uploaded_file = st.file_uploader("อัปโหลดรูปภาพหลักฐาน", type=["jpg", "png", "jpeg"])
@@ -17,6 +18,7 @@ with st.form("activity_form"):
         if activity_name and uploaded_file:
             st.success("บันทึกข้อมูลสำเร็จ!")
             st.image(uploaded_file, caption=f"หลักฐาน: {activity_name}")
+            st.write(f"**ผู้รับผิดชอบโครงการ:** {project_owner}")
             st.write(f"**วันที่:** {activity_date} | **จำนวนชั่วโมง:** {activity_hours} ชั่วโมง")
         else:
             st.error("กรุณากรอกชื่อกิจกรรมและอัปโหลดรูปภาพ")
@@ -27,6 +29,7 @@ st.divider()
 st.subheader("ประวัติกิจกรรมที่บันทึกไว้ (ข้อมูลจำลอง)")
 data = {
     "ชื่อกิจกรรม": ["อบรมวิชาการ", "ค่ายอาสา", "ปลูกป่า"],
+    "ผู้รับผิดชอบ": ["อ.สมชาย", "พี่ประธานค่าย", "กองกิจการนิสิต"],
     "วันที่": ["2026-08-10", "2026-08-15", "2026-08-22"],
     "ชั่วโมง": [3, 6, 4]
 }
