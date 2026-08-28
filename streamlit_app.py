@@ -5,8 +5,15 @@ import datetime
 st.title("ระบบบันทึกชั่วโมง กยศ.")
 st.write("อัปโหลดรูปภาพและกรอกรายละเอียดกิจกรรมเพื่อจัดเก็บเป็นหลักฐาน")
 
-# ส่วนที่ 1: ฟอร์มกรอกข้อมูลและอัปโหลดรูปภาพ
-with st.form("activity_form"):
+# สร้าง Session State เพื่อเก็บข้อมูลชั่วคราว (จำลองการดึงข้อมูลจาก Database)
+if "activity_list" not in st.session_state:
+    st.session_state.activity_list = [
+        {"ชื่อกิจกรรม": "อบรมวิชาการ", "ผู้รับผิดชอบ": "อ.สมชาย", "วันที่": "2026-08-10", "เวลา": "09.00 - 12.00", "ชั่วโมง": 3},
+        {"ชื่อกิจกรรม": "ค่ายอาสา", "ผู้รับผิดชอบ": "พี่ประธานค่าย", "วันที่": "2026-08-15", "เวลา": "08.00 - 16.00", "ชั่วโมง": 8}
+    ]
+
+# ส่วนที่ 1: ฟอร์มกรอกข้อมูลและอัปโหลดรูปภาพ (เพิ่ม clear_on_submit เพื่อล้างฟอร์มหลังกดส่ง)
+with st.form("activity_form", clear_on_submit=True):
     activity_name = st.text_input("ชื่อกิจกรรม")
     project_owner = st.text_input("ชื่อผู้รับผิดชอบโครงการ (สำหรับติดต่อขอลายเซ็น)")
     
@@ -25,28 +32,29 @@ with st.form("activity_form"):
     
     if submitted:
         if activity_name and uploaded_file:
-            st.success("บันทึกข้อมูลสำเร็จ!")
-            st.image(uploaded_file, caption=f"หลักฐาน: {activity_name}")
-            st.write(f"**ผู้รับผิดชอบโครงการ:** {project_owner}")
-            st.write(f"**วันที่:** {activity_date} | **เวลา:** {start_time.strftime('%H.%M')} - {end_time.strftime('%H.%M')} น.")
-            st.write(f"**จำนวนชั่วโมง:** {activity_hours} ชั่วโมง")
+            # นำข้อมูลใหม่ที่เพิ่งกรอก ไปต่อท้ายในตารางฐานข้อมูลจำลอง
+            new_activity = {
+                "ชื่อกิจกรรม": activity_name,
+                "ผู้รับผิดชอบ": project_owner,
+                "วันที่": activity_date.strftime("%Y-%m-%d"),
+                "เวลา": f"{start_time.strftime('%H.%M')} - {end_time.strftime('%H.%M')}",
+                "ชั่วโมง": activity_hours
+            }
+            st.session_state.activity_list.append(new_activity)
+            
+            st.success("บันทึกข้อมูลสำเร็จ! เลื่อนดูข้อมูลที่อัปเดตในตารางด้านล่างได้เลย")
         else:
             st.error("กรุณากรอกชื่อกิจกรรมและอัปโหลดรูปภาพ")
 
 st.divider()
 
-# ส่วนที่ 2: ตารางแสดงข้อมูลจำลอง (Dashboard)
-st.subheader("ประวัติกิจกรรมที่บันทึกไว้ (ข้อมูลจำลอง)")
-data = {
-    "ชื่อกิจกรรม": ["อบรมวิชาการ", "ค่ายอาสา", "ปลูกป่า"],
-    "ผู้รับผิดชอบ": ["อ.สมชาย", "พี่ประธานค่าย", "กองกิจการนิสิต"],
-    "วันที่": ["2026-08-10", "2026-08-15", "2026-08-22"],
-    "เวลา": ["09.00 - 12.00", "08.00 - 16.00", "09.00 - 15.00"],
-    "ชั่วโมง": [3, 8, 6]
-}
-df = pd.DataFrame(data)
+# ส่วนที่ 2: ตารางแสดงข้อมูล
+st.subheader("ประวัติกิจกรรมที่บันทึกไว้")
+# ดึงข้อมูลจาก Session State มาแสดงผลเป็นตาราง
+df = pd.DataFrame(st.session_state.activity_list)
 st.table(df)
 
+# คำนวณยอดชั่วโมงรวมแบบเรียลไทม์
 total_hours = df["ชั่วโมง"].sum()
 st.metric(label="ยอดชั่วโมงสะสมรวม", value=f"{total_hours} ชั่วโมง")
 
