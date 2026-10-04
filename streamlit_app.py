@@ -43,7 +43,7 @@ with st.form("activity_form", clear_on_submit=True):
             st.session_state.activity_list.append(new_activity)
             
             st.success("บันทึกข้อมูลสำเร็จ! เลื่อนดูข้อมูลที่อัปเดตในตารางด้านล่างได้เลย")
-            # สามารถเพิ่มบรรทัดนี้เพื่อพรีวิวรูปภาพที่อัปโหลด
+            # สามารถเปิดคอมเมนต์บรรทัดด้านล่างเพื่อพรีวิวรูปภาพที่อัปโหลดได้เลย
             # st.image(uploaded_file, caption="รูปภาพหลักฐาน", width=300)
         else:
             st.error("กรุณากรอกชื่อกิจกรรมและอัปโหลดรูปภาพ")
