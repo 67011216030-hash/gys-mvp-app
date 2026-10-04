@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import datetime
 import base64
+import os  # <-- เพิ่ม import os ตรงนี้
 
 st.title("ระบบบันทึกชั่วโมง กยศ.")
 st.write("อัปโหลดรูปภาพและกรอกรายละเอียดกิจกรรมเพื่อจัดเก็บเป็นหลักฐาน")
@@ -44,9 +45,7 @@ with st.form("activity_form", clear_on_submit=True):
     if submitted:
         if start_date > end_date:
             st.error("❌ วันที่เริ่มต้นต้องไม่ช้ากว่าวันที่สิ้นสุด")
-        # บังคับว่าต้องกรอกแค่ชื่อกิจกรรมและอัปโหลดรูปภาพ
         elif activity_name and uploaded_file:
-            # แปลงภาพเป็น Base64
             img_b64 = get_image_base64(uploaded_file)
             
             new_activity = {
@@ -70,7 +69,6 @@ st.caption("💡 ทิปส์: ดับเบิลคลิกที่ต�
 
 df = pd.DataFrame(st.session_state.activity_list)
 
-# แสดงผลตารางและกำหนดค่าคอลัมน์ "รูปภาพ" ให้แสดงผลเป็นภาพ (ImageColumn)
 edited_df = st.data_editor(
     df,
     column_config={
@@ -83,10 +81,8 @@ edited_df = st.data_editor(
     hide_index=True
 )
 
-# อัปเดตข้อมูลกลับเข้า Session State หากมีการแก้ไขหรือลบออก
 st.session_state.activity_list = edited_df.to_dict('records')
 
-# คำนวณยอดชั่วโมงรวมแบบเรียลไทม์
 total_hours = edited_df["ชั่วโมง"].sum() if not edited_df.empty else 0
 st.metric(label="ยอดชั่วโมงสะสมรวม", value=f"{total_hours} ชั่วโมง")
 
@@ -96,11 +92,12 @@ st.divider()
 st.subheader("ส่งออกเอกสาร")
 st.write("ตัวอย่างรูปแบบเอกสารที่จะได้รับหลังจากการดาวน์โหลด:")
 
-# โหลดรูปภาพตัวอย่างมาแสดง
-try:
-    st.image("ชื่อโครงการ.jpg", caption="ตัวอย่างแบบฟอร์มบันทึกการเข้าร่วมโครงการ", use_container_width=True)
-except FileNotFoundError:
-    st.warning("⚠️ ไม่พบไฟล์รูปภาพ 'ชื่อโครงการ.jpg' กรุณาตรวจสอบให้แน่ใจว่าได้วางไฟล์รูปภาพนี้ไว้ในโฟลเดอร์เดียวกันกับไฟล์โค้ด (.py) แล้ว")
+# ใช้ os.path.exists เช็กไฟล์ก่อนแสดงผล เพื่อป้องกันแอปแครชบน Cloud
+image_path = "ชื่อโครงการ.jpg"
+if os.path.exists(image_path):
+    st.image(image_path, caption="ตัวอย่างแบบฟอร์มบันทึกการเข้าร่วมโครงการ", use_container_width=True)
+else:
+    st.warning(f"⚠️ ไม่พบไฟล์รูปภาพ '{image_path}' ในระบบ Cloud กรุณาอัปโหลดไฟล์ภาพนี้ขึ้น GitHub ด้วยครับ")
 
 if st.button("📄 ดาวน์โหลดสรุปกิจกรรม (PDF)"):
     st.info("📌 (จำลองระบบ) ระบบจะทำการสร้างไฟล์ PDF ตามรูปแบบตัวอย่างด้านบน พร้อมดึงข้อมูลจากตารางและแนบรูปภาพกิจกรรมลงไปให้โดยอัตโนมัติ")
