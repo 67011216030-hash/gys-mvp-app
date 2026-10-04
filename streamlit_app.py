@@ -19,49 +19,45 @@ with st.form("activity_form", clear_on_submit=True):
     
     col1, col2, col3 = st.columns(3)
     with col1:
-        activity_date = st.date_input("วันที่จัดกิจกรรม")
+        activity_date = st.date_input("วันที่จัดกิจกรรม", datetime.date(2026, 10, 4))
     with col2:
         start_time = st.time_input("เวลาเริ่ม", datetime.time(9, 0))
     with col3:
         end_time = st.time_input("เวลาสิ้นสุด", datetime.time(11, 0))
         
-    activity_hours = st.number_input("จำนวนชั่วโมงที่ได้รับ", min_value=1, step=1)
-    uploaded_file = st.file_uploader("อัปโหลดรูปภาพหลักฐาน", type=["jpg", "png", "jpeg"])
+    # ปรับค่าเริ่มต้นเป็น 2 ชั่วโมงให้สอดคล้องกับเวลา 09:00 - 11:00
+    hours_earned = st.number_input("จำนวนชั่วโมงที่ได้รับ", min_value=1, step=1, value=2)
     
+    uploaded_file = st.file_uploader("อัปโหลดรูปภาพหลักฐาน", type=["jpg", "png"])
+    
+    # ปุ่ม Submit ต้องอยู่ภายใน with st.form()
     submitted = st.form_submit_button("บันทึกข้อมูล")
-    
+
+    # ลอจิกจัดการข้อมูลเมื่อกดบันทึก
     if submitted:
-        if activity_name and uploaded_file:
-            # นำข้อมูลใหม่ที่เพิ่งกรอก ไปต่อท้ายในตารางฐานข้อมูลจำลอง
-            new_activity = {
+        if activity_name and project_owner:
+            # จัดรูปแบบเวลาให้อ่านง่าย
+            time_str = f"{start_time.strftime('%H.%M')} - {end_time.strftime('%H.%M')}"
+            
+            # เพิ่มข้อมูลที่กรอกใหม่ลงใน Session State
+            st.session_state.activity_list.append({
                 "ชื่อกิจกรรม": activity_name,
                 "ผู้รับผิดชอบ": project_owner,
                 "วันที่": activity_date.strftime("%Y-%m-%d"),
-                "เวลา": f"{start_time.strftime('%H.%M')} - {end_time.strftime('%H.%M')}",
-                "ชั่วโมง": activity_hours
-            }
-            st.session_state.activity_list.append(new_activity)
-            
-            st.success("บันทึกข้อมูลสำเร็จ! เลื่อนดูข้อมูลที่อัปเดตในตารางด้านล่างได้เลย")
-            # สามารถเพิ่มบรรทัดนี้เพื่อพรีวิวรูปภาพที่อัปโหลด
-            # st.image(uploaded_file, caption="รูปภาพหลักฐาน", width=300)
+                "เวลา": time_str,
+                "ชั่วโมง": hours_earned
+            })
+            st.success("บันทึกข้อมูลกิจกรรมเรียบร้อยแล้ว!")
         else:
-            st.error("กรุณากรอกชื่อกิจกรรมและอัปโหลดรูปภาพ")
+            st.error("กรุณากรอกชื่อกิจกรรมและชื่อผู้รับผิดชอบให้ครบถ้วน")
 
-st.divider()
-
-# ส่วนที่ 2: ตารางแสดงข้อมูล
-st.subheader("ประวัติกิจกรรมที่บันทึกไว้")
-df = pd.DataFrame(st.session_state.activity_list)
-st.table(df)
-
-# คำนวณยอดชั่วโมงรวมแบบเรียลไทม์
-total_hours = df["ชั่วโมง"].sum()
-st.metric(label="ยอดชั่วโมงสะสมรวม", value=f"{total_hours} ชั่วโมง")
-
-st.divider()
-
-# ส่วนที่ 3: ปุ่ม Export PDF (Mockup)
-st.subheader("ส่งออกเอกสาร")
-if st.button("📄 ดาวน์โหลดสรุปกิจกรรม (PDF)"):
-    st.info("📌 (จำลองระบบ) ระบบจะทำการสร้างไฟล์ PDF ที่มีรูปภาพและรายละเอียดทั้งหมด พร้อมเว้นช่องว่างสำหรับให้ผู้รับผิดชอบเซ็นชื่อ")
+# ส่วนที่ 2: แสดงผลข้อมูลที่บันทึกแล้วเพื่อตรวจเช็ก
+st.subheader("ประวัติกิจกรรมที่บันทึกแล้ว")
+if st.session_state.activity_list:
+    df = pd.DataFrame(st.session_state.activity_list)
+    # ใช้ st.dataframe เพื่อแสดงตารางแบบ Interactive
+    st.dataframe(df, use_container_width=True)
+    
+    # สรุปยอดชั่วโมงรวมทั้งหมด
+    total_hours = df["ชั่วโมง"].sum()
+    st.info(f"รวมชั่วโมงจิตอาสาทั้งหมด: **{total_hours} ชั่วโมง**")
