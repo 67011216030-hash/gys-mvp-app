@@ -12,7 +12,7 @@ if "activity_list" not in st.session_state:
         {"ชื่อกิจกรรม": "ค่ายอาสา", "ผู้รับผิดชอบ": "พี่ประธานค่าย", "วันที่": "2026-08-15", "เวลา": "08.00 - 16.00", "ชั่วโมง": 8}
     ]
 
-# ส่วนที่ 1: ฟอร์มกรอกข้อมูลและอัปโหลดรูปภาพ (เพิ่ม clear_on_submit เพื่อล้างฟอร์มหลังกดส่ง)
+# ส่วนที่ 1: ฟอร์มกรอกข้อมูลและอัปโหลดรูปภาพ
 with st.form("activity_form", clear_on_submit=True):
     activity_name = st.text_input("ชื่อกิจกรรม")
     project_owner = st.text_input("ชื่อผู้รับผิดชอบโครงการ (สำหรับติดต่อขอลายเซ็น)")
@@ -43,6 +43,8 @@ with st.form("activity_form", clear_on_submit=True):
             st.session_state.activity_list.append(new_activity)
             
             st.success("บันทึกข้อมูลสำเร็จ! เลื่อนดูข้อมูลที่อัปเดตในตารางด้านล่างได้เลย")
+            # สามารถเพิ่มบรรทัดนี้เพื่อพรีวิวรูปภาพที่อัปโหลด
+            # st.image(uploaded_file, caption="รูปภาพหลักฐาน", width=300)
         else:
             st.error("กรุณากรอกชื่อกิจกรรมและอัปโหลดรูปภาพ")
 
@@ -50,7 +52,6 @@ st.divider()
 
 # ส่วนที่ 2: ตารางแสดงข้อมูล
 st.subheader("ประวัติกิจกรรมที่บันทึกไว้")
-# ดึงข้อมูลจาก Session State มาแสดงผลเป็นตาราง
 df = pd.DataFrame(st.session_state.activity_list)
 st.table(df)
 
