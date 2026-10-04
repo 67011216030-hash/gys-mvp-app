@@ -18,14 +18,13 @@ def get_image_base64(uploaded_file):
 # สร้าง Session State เพื่อเก็บข้อมูลชั่วคราว
 if "activity_list" not in st.session_state:
     st.session_state.activity_list = [
-        {"รูปภาพ": None, "ชื่อกิจกรรม": "อบรมวิชาการ", "ผู้รับผิดชอบ": "อ.สมชาย", "วันที่เริ่มต้น": datetime.date(2026, 8, 10), "วันที่สิ้นสุด": datetime.date(2026, 8, 10), "เวลา": "09.00 - 12.00", "ชั่วโมง": 3},
-        {"รูปภาพ": None, "ชื่อกิจกรรม": "ค่ายอาสา", "ผู้รับผิดชอบ": "พี่ประธานค่าย", "วันที่เริ่มต้น": datetime.date(2026, 8, 15), "วันที่สิ้นสุด": datetime.date(2026, 8, 16), "เวลา": "08.00 - 16.00", "ชั่วโมง": 8}
+        {"รูปภาพ": None, "ชื่อกิจกรรม": "อบรมวิชาการ", "วันที่เริ่มต้น": datetime.date(2026, 8, 10), "วันที่สิ้นสุด": datetime.date(2026, 8, 10), "เวลา": "09.00 - 12.00", "ชั่วโมง": 3},
+        {"รูปภาพ": None, "ชื่อกิจกรรม": "ค่ายอาสา", "วันที่เริ่มต้น": datetime.date(2026, 8, 15), "วันที่สิ้นสุด": datetime.date(2026, 8, 16), "เวลา": "08.00 - 16.00", "ชั่วโมง": 8}
     ]
 
 # ส่วนที่ 1: ฟอร์มกรอกข้อมูล
 with st.form("activity_form", clear_on_submit=True):
     activity_name = st.text_input("ชื่อกิจกรรม")
-    project_owner = st.text_input("ชื่อผู้รับผิดชอบโครงการ (สำหรับติดต่อขอลายเซ็น)")
     
     col1, col2, col3, col4 = st.columns(4)
     with col1:
@@ -45,15 +44,14 @@ with st.form("activity_form", clear_on_submit=True):
     if submitted:
         if start_date > end_date:
             st.error("❌ วันที่เริ่มต้นต้องไม่ช้ากว่าวันที่สิ้นสุด")
-        # บังคับว่าต้องกรอกข้อมูลและอัปโหลดรูปภาพด้วย ถึงจะบันทึกได้
-        elif activity_name and project_owner and uploaded_file:
+        # บังคับว่าต้องกรอกแค่ชื่อกิจกรรมและอัปโหลดรูปภาพ
+        elif activity_name and uploaded_file:
             # แปลงภาพเป็น Base64
             img_b64 = get_image_base64(uploaded_file)
             
             new_activity = {
                 "รูปภาพ": img_b64,
                 "ชื่อกิจกรรม": activity_name,
-                "ผู้รับผิดชอบ": project_owner,
                 "วันที่เริ่มต้น": start_date,
                 "วันที่สิ้นสุด": end_date,
                 "เวลา": f"{start_time.strftime('%H.%M')} - {end_time.strftime('%H.%M')}",
@@ -62,7 +60,7 @@ with st.form("activity_form", clear_on_submit=True):
             st.session_state.activity_list.append(new_activity)
             st.success("✅ บันทึกข้อมูลพร้อมรูปภาพหลักฐานสำเร็จ!")
         else:
-            st.error("❌ กรุณากรอกชื่อกิจกรรม ชื่อผู้รับผิดชอบ และอัปโหลดรูปภาพหลักฐานให้ครบถ้วน")
+            st.error("❌ กรุณากรอกชื่อกิจกรรม และอัปโหลดรูปภาพหลักฐานให้ครบถ้วน")
 
 st.divider()
 
@@ -97,4 +95,4 @@ st.divider()
 # ส่วนที่ 3: ปุ่ม Export PDF
 st.subheader("ส่งออกเอกสาร")
 if st.button("📄 ดาวน์โหลดสรุปกิจกรรม (PDF)"):
-    st.info("📌 (จำลองระบบ) ระบบจะทำการสร้างไฟล์ PDF ที่มีรูปภาพและรายละเอียดทั้งหมด พร้อมเว้นช่องว่างสำหรับให้ผู้รับผิดชอบเซ็นชื่อ")
+    st.info("📌 (จำลองระบบ) ระบบจะทำการสร้างไฟล์ PDF ที่มีรูปภาพและรายละเอียดทั้งหมด พร้อมเว้นช่องว่างสำหรับให้เซ็นชื่อ")
